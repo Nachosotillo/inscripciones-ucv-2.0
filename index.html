@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Automatizado de Inscripciones - EAC UCV</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 60px;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+        
+        h1 {
+            color: #1a202c;
+            margin-bottom: 15px;
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            color: #4a5568;
+            font-size: 1.3em;
+            font-weight: 400;
+            margin-top: 15px;
+        }
+        
+        .university-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: calc(100% - 450px);
+            background: linear-gradient(to bottom, #667eea, #764ba2, #667eea);
+            border-radius: 3px;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .phase {
+            margin-bottom: 80px;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .phase-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 20px 0;
+            z-index: 10;
+        }
+        
+        .phase-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            font-size: 2em;
+            font-weight: 800;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+            border: 5px solid white;
+        }
+        
+        .phase-title {
+            display: block;
+            margin-top: 20px;
+            font-size: 2.2em;
+            color: #1a202c;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 10px 30px;
+            border-radius: 10px;
+            display: inline-block;
+            position: relative;
+            z-index: 11;
+        }
+        
+        .phase-time {
+            display: inline-block;
+            background: #f7fafc;
+            color: #4a5568;
+            font-size: 1.1em;
+            margin-top: 10px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 2px solid #e2e8f0;
+            position: relative;
+            z-index: 11;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+        
+        .step {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--step-color), var(--step-color-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        
+        .step:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .step:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-color: var(--step-color);
+        }
+        
+        .step.prep { --step-color: #3b82f6; --step-color-light: #60a5fa; }
+        .step.payment { --step-color: #10b981; --step-color-light: #34d399; }
+        .step.inscription { --step-color: #f59e0b; --step-color-light: #fbbf24; }
+        .step.second { --step-color: #8b5cf6; --step-color-light: #a78bfa; }
+        .step.final { --step-color: #ef4444; --step-color-light: #f87171; }
+        
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            margin-bottom: 25px;
+            background: var(--step-color);
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        
+        .step-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--step-color-light);
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .step:hover .step-icon::after {
+            opacity: 0.3;
+        }
+        
+        .step-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .step-desc {
+            color: #4a5568;
+            line-height: 1.8;
+            font-size: 1.05em;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+        
+        .step-list {
+            list-style: none;
+        }
+        
+        .step-list li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            color: #2d3748;
+            font-size: 1em;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        
+        .step-list li:hover {
+            padding-left: 40px;
+            color: var(--step-color);
+        }
+        
+        .step-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 24px;
+            height: 24px;
+            background: var(--step-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
+        .flow-arrow {
+            text-align: center;
+            margin: 40px 0;
+            position: relative;
+        }
+        
+        .flow-arrow::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 0.05;
+            }
+        }
+        
+        .flow-arrow-icon {
+            font-size: 3em;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 2;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+        
+        .benefits-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 30px;
+            padding: 50px;
+            margin-top: 60px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        }
+        
+        .benefits-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .benefits-box h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            font-weight: 800;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .benefit-item {
+            background: rgba(255,255,255,0.15);
+            padding: 35px 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .benefit-item:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.4);
+        }
+        
+        .benefit-number {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            line-height: 1;
+        }
+        
+        .benefit-text {
+            font-size: 1.1em;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        
+        .tech-section {
+            margin-top: 60px;
+            text-align: center;
+        }
+        
+        .tech-title {
+            font-size: 2.2em;
+            color: #1a202c;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+        }
+        
+        .tech-item {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 30px 25px;
+            border-radius: 20px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tech-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .tech-item:hover::before {
+            left: 100%;
+        }
+        
+        .tech-item:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .tech-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        .tech-name {
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
+            font-size: 1.2em;
+        }
+        
+        .tech-purpose {
+            font-size: 0.95em;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        
+        .final-cta {
+            text-align: center;
+            margin-top: 60px;
+            padding: 50px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 30px;
+            border: 3px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+        }
+        
+        .final-cta h3 {
+            color: #1a202c;
+            margin-bottom: 20px;
+            font-size: 2em;
+            font-weight: 800;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .final-cta p {
+            color: #2d3748;
+            font-size: 1.2em;
+            line-height: 2;
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .final-cta strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 40px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .phase-title {
+                font-size: 1.7em;
+            }
+            
+            .steps {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            
+            .container {
+                padding: 30px 20px;
+                border-radius: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+            
+            .phase-title {
+                font-size: 1.4em;
+            }
+            
+            .benefits-box {
+                padding: 30px 20px;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 SISTEMA AUTOMATIZADO DE INSCRIPCIONES</h1>
+            <p class="subtitle">Transformación Digital del Proceso de Inscripción</p>
+            <span class="university-badge">Escuela de Administración y Contaduría • UCV</span>
+        </div>
+        
+        <div class="timeline">
+            <!-- FASE 1: PREPARACIÓN -->
+            <div class="phase">
+                <div class="phase-header">
+                    <span class="phase-number">1</span>
+                    <span class="phase-title">FASE PREPARATORIA</span>
+                    <span class="phase-time">📅 2 semanas antes del proceso</span>
+                </div>
+                
+                <div class="steps">
+                    <div class="step prep">
+                        <div class="step-icon">📊</div>
+                        <div class="step-title">Carga de Datos</div>
+                        <div class="step-desc">El personal administrativo proporciona un único archivo Excel:</div>
+                        <ul class="step-list">
+                            <li>Cédula de identidad</li>
+                            <li>Correo electrónico institucional</li>
+                            <li>Promedio académico actualizado</li>
+                            <li>Número de materias cursadas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step prep">
+                        <div class="step-icon">⚙️</div>
+                        <div class="step-title">Cálculo Automático de Mérito</div>
+                        <div class="step-desc">Sistema procesa y genera el ranking en segundos:</div>
+                        <ul class="step-list">
+                            <li>Aplica fórmula de ponderación transparente</li>
+                            <li>Genera índice académico ponderado</li>
+                            <li>Ordena estudiantes por mérito</li>
+                            <li>Asigna posiciones individuales</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step prep">
+                        <div class="step-icon">📧</div>
+                        <div class="step-title">Notificación Personalizada</div>
+                        <div class="step-desc">Cada estudiante recibe correo detallado con:</div>
+                        <ul class="step-list">
+                            <li>Posición exacta en el ranking</li>
+                            <li>Índice ponderado calculado</li>
+                            <li>Desglose completo del cálculo</li>
+                            <li>Enlace al dashboard de transparencia</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step prep">
+                        <div class="step-icon">📈</div>
+                        <div class="step-title">Dashboard Público</div>
+                        <div class="step-desc">Visualización transparente en tiempo real:</div>
+                        <ul class="step-list">
+                            <li>Rangos de posiciones agregadas</li>
+                            <li>Oferta académica completa</li>
+                            <li>Cupos disponibles por materia</li>
+                            <li>Horarios, secciones y profesores</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrow">
+                <span class="flow-arrow-icon">⬇️</span>
+            </div>
+            
+            <!-- FASE 2: VERIFICACIÓN DE PAGOS -->
+            <div class="phase">
+                <div class="phase-header">
+                    <span class="phase-number">2</span>
+                    <span class="phase-title">VERIFICACIÓN DE PAGOS</span>
+                    <span class="phase-time">💳 2-3 días antes de inscripciones</span>
+                </div>
+                
+                <div class="steps">
+                    <div class="step payment">
+                        <div class="step-icon">📝</div>
+                        <div class="step-title">Formulario de Pago</div>
+                        <div class="step-desc">Estudiante ingresa datos básicos de forma simple:</div>
+                        <ul class="step-list">
+                            <li>Número de cédula</li>
+                            <li>Correo electrónico</li>
+                            <li>Referencia bancaria del pago</li>
+                            <li>Foto del comprobante (opcional)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step payment">
+                        <div class="step-icon">🔍</div>
+                        <div class="step-title">Verificación Instantánea</div>
+                        <div class="step-desc">Sistema valida automáticamente en tiempo real:</div>
+                        <ul class="step-list">
+                            <li>Consulta API bancaria directamente</li>
+                            <li>Valida monto correcto del pago</li>
+                            <li>Confirma período académico válido</li>
+                            <li>Detecta referencias duplicadas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step payment">
+                        <div class="step-icon">✅</div>
+                        <div class="step-title">Confirmación Inmediata</div>
+                        <div class="step-desc">Respuesta automática en menos de 5 segundos:</div>
+                        <ul class="step-list">
+                            <li>Confirmación de pago verificado</li>
+                            <li>Correo electrónico de comprobación</li>
+                            <li>Recordatorio de ventana horaria asignada</li>
+                            <li>Estado actualizado: LISTO para inscribir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrow">
+                <span class="flow-arrow-icon">⬇️</span>
+            </div>
+            
+            <!-- FASE 3: INSCRIPCIONES PRINCIPAL -->
+            <div class="phase">
+                <div class="phase-header">
+                    <span class="phase-number">3</span>
+                    <span class="phase-title">INSCRIPCIONES PRINCIPAL</span>
+                    <span class="phase-time">🎯 Días 1-2 (turnos organizados)</span>
+                </div>
+                
+                <div class="steps">
+                    <div class="step inscription">
+                        <div class="step-icon">⏰</div>
+                        <div class="step-title">Ventana Horaria Asignada</div>
+                        <div class="step-desc">Grupos de 80-100 estudiantes por turno:</div>
+                        <ul class="step-list">
+                            <li>Asignación por orden de ranking</li>
+                            <li>45 minutos para completar formulario</li>
+                            <li>Dashboard actualizado en vivo</li>
+                            <li>Sin presión por velocidad de conexión</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step inscription">
+                        <div class="step-icon">📋</div>
+                        <div class="step-title">Selección Inteligente</div>
+                        <div class="step-desc">Formulario optimizado para maximizar éxito:</div>
+                        <ul class="step-list">
+                            <li>5 materias prioritarias (preferencia)</li>
+                            <li>5 materias alternativas (respaldo)</li>
+                            <li>Visualización de horarios completos</li>
+                            <li>Cupos disponibles en tiempo real</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step inscription">
+                        <div class="step-icon">🤖</div>
+                        <div class="step-title">Procesamiento Automático</div>
+                        <div class="step-desc">Al cerrar ventana horaria el sistema:</div>
+                        <ul class="step-list">
+                            <li>Ordena solicitudes por mérito académico</li>
+                            <li>Intenta inscribir prioritarias primero</li>
+                            <li>Prueba alternativas si no hay cupo</li>
+                            <li>Maximiza tasa de inscripción exitosa</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step inscription">
+                        <div class="step-icon">📬</div>
+                        <div class="step-title">Resultados Instantáneos</div>
+                        <div class="step-desc">Correo automático con detalles completos:</div>
+                        <ul class="step-list">
+                            <li>Materias inscritas exitosamente</li>
+                            <li>Sección, profesor y horario de cada una</li>
+                            <li>Materias sin cupo disponible</li>
+                            <li>Inclusión automática en 2da oportunidad</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrow">
+                <span class="flow-arrow-icon">⬇️</span>
+            </div>
+            
+            <!-- FASE 4: SEGUNDA OPORTUNIDAD -->
+            <div class="phase">
+                <div class="phase-header">
+                    <span class="phase-number">4</span>
+                    <span class="phase-title">SEGUNDA OPORTUNIDAD</span>
+                    <span class="phase-time">🔄 Día 3 (proceso automático)</span>
+                </div>
+                
+                <div class="steps">
+                    <div class="step second">
+                        <div class="step-icon">🎯</div>
+                        <div class="step-title">Identificación Automática</div>
+                        <div class="step-desc">Sistema detecta quiénes necesitan 2da ronda:</div>
+                        <ul class="step-list">
+                            <li>Estudiantes con inscripción incompleta</li>
+                            <li>Mantiene orden de ranking original</li>
+                            <li>Reagrupa en nuevas ventanas horarias</li>
+                            <li>Envía notificación automática</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step second">
+                        <div class="step-icon">📝</div>
+                        <div class="step-title">Formulario Simplificado</div>
+                        <div class="step-desc">Enfocado solo en materias faltantes:</div>
+                        <ul class="step-list">
+                            <li>Muestra materias ya inscritas</li>
+                            <li>Dashboard de cupos remanentes</li>
+                            <li>Nueva ventana horaria específica</li>
+                            <li>Mismo criterio justo de priorización</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step second">
+                        <div class="step-icon">✨</div>
+                        <div class="step-title">Resultado Final Optimizado</div>
+                        <div class="step-desc">Estimación basada en datos reales:</div>
+                        <ul class="step-list">
+                            <li>75% completa en fase principal</li>
+                            <li>20% completa en segunda oportunidad</li>
+                            <li>5% requiere atención personalizada</li>
+                            <li>95% de automatización total lograda</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrow">
+                <span class="flow-arrow-icon">⬇️</span>
+            </div>
+            
+            <!-- FASE 5: CONSOLIDACIÓN -->
+            <div class="phase">
+                <div class="phase-header">
+                    <span class="phase-number">5</span>
+                    <span class="phase-title">CONSOLIDACIÓN FINAL</span>
+                    <span class="phase-time">📦 Día 4 (cierre administrativo)</span>
+                </div>
+                
+                <div class="steps">
+                    <div class="step final">
+                        <div class="step-icon">📥</div>
+                        <div class="step-title">Exportación Unificada</div>
+                        <div class="step-desc">Personal administrativo realiza proceso simple:</div>
+                        <ul class="step-list">
+                            <li>Descarga UN solo archivo consolidado</li>
+                            <li>Formato compatible con sistema UCV</li>
+                            <li>Todas las inscripciones incluidas</li>
+                            <li>Datos validados y verificados</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step final">
+                        <div class="step-icon">⬆️</div>
+                        <div class="step-title">Carga Masiva al Sistema</div>
+                        <div class="step-desc">Importación eficiente al sistema oficial:</div>
+                        <ul class="step-list">
+                            <li>Carga masiva en 2-4 horas</li>
+                            <li>vs. 400 horas del método anterior</li>
+                            <li>Reducción del 95% en tiempo</li>
+                            <li>Eliminación total de errores manuales</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step final">
+                        <div class="step-icon">📊</div>
+                        <div class="step-title">Reportes Analíticos</div>
+                        <div class="step-desc">Sistema genera análisis automático completo:</div>
+                        <ul class="step-list">
+                            <li>Estadísticas de inscripción por fase</li>
+                            <li>Materias con mayor demanda</li>
+                            <li>Métricas de tiempo de procesamiento</li>
+                            <li>Insights para planificación futura</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BENEFICIOS -->
+        <div class="benefits-box">
+            <h2>💎 IMPACTO CUANTIFICABLE DEL SISTEMA</h2>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <div class="benefit-number">3 días</div>
+                    <div class="benefit-text">Duración total vs. 14 días actuales</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-number">15 min</div>
+                    <div class="benefit-text">Tiempo por estudiante vs. 6-9 horas</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-number">10,000+</div>
+                    <div class="benefit-text">Horas estudiantiles ahorradas/semestre</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-number">95%</div>
+                    <div class="benefit-text">Reducción en carga administrativa</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-number">0</div>
+                    <div class="benefit-text">Colas presenciales necesarias</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-number">100%</div>
+                    <div class="benefit-text">Transparencia y trazabilidad</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TECNOLOGÍAS -->
+        <div class="tech-section">
+            <h2 class="tech-title">🔧 TECNOLOGÍAS QUE IMPULSAN EL SISTEMA</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <div class="tech-icon">⚡</div>
+                    <div class="tech-name">n8n</div>
+                    <div class="tech-purpose">Motor central de automatización de workflows</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">📝</div>
+                    <div class="tech-name">Google Forms</div>
+                    <div class="tech-purpose">Interfaz accesible de captura de datos</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">📊</div>
+                    <div class="tech-name">Google Sheets</div>
+                    <div class="tech-purpose">Base de datos en tiempo real (500 llamadas/min)</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">📈</div>
+                    <div class="tech-name">Looker Studio</div>
+                    <div class="tech-purpose">Dashboards públicos interactivos</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">💳</div>
+                    <div class="tech-name">API Bancaria</div>
+                    <div class="tech-purpose">Verificación automática de pagos</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">📧</div>
+                    <div class="tech-name">SendGrid/Mailgun</div>
+                    <div class="tech-purpose">Sistema profesional de notificaciones</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="final-cta">
+            <h3>🎯 DE 14 DÍAS CAÓTICOS A 3 DÍAS ORGANIZADOS</h3>
+            <p>
+                Este no es solo un sistema tecnológico. <strong>Es una transformación completa de la experiencia de inscripción.</strong><br><br>
+                Transparente en cada paso. Justo en cada decisión. Eficiente en cada proceso. Automático de principio a fin.<br><br>
+                <strong>Bienvenidos al futuro de las inscripciones en la Escuela de Administración y Contaduría de la UCV.</strong><br>
+                <em>Donde la tecnología sirve a la academia, y el mérito académico es recompensado con total transparencia.</em>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
