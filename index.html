@@ -1,962 +1,446 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Automatizado de Inscripciones - EAC UCV</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
-            padding: 40px 20px;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.3) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 30px;
-            padding: 60px;
-            box-shadow: 0 30px 90px rgba(0,0,0,0.4);
-            position: relative;
-            z-index: 1;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 60px;
-            position: relative;
-        }
-        
-        .header::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 2px;
-        }
-        
-        h1 {
-            color: #1a202c;
-            margin-bottom: 15px;
-            font-size: 3em;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.2;
-        }
-        
-        .subtitle {
-            color: #4a5568;
-            font-size: 1.3em;
-            font-weight: 400;
-            margin-top: 15px;
-        }
-        
-        .university-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-size: 0.9em;
-            font-weight: 600;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        .timeline {
-            position: relative;
-            padding: 40px 0;
-        }
-        
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: calc(100% - 450px);
-            background: linear-gradient(to bottom, #667eea, #764ba2, #667eea);
-            border-radius: 3px;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        .phase {
-            margin-bottom: 80px;
-            position: relative;
-            animation: fadeInUp 0.8s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .phase-header {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
-            background: rgba(255, 255, 255, 0.98);
-            padding: 20px 0;
-            z-index: 10;
-        }
-        
-        .phase-number {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 50%;
-            font-size: 2em;
-            font-weight: 800;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
-            border: 5px solid white;
-        }
-        
-        .phase-title {
-            display: block;
-            margin-top: 20px;
-            font-size: 2.2em;
-            color: #1a202c;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: rgba(255, 255, 255, 0.98);
-            padding: 10px 30px;
-            border-radius: 10px;
-            display: inline-block;
-            position: relative;
-            z-index: 11;
-        }
-        
-        .phase-time {
-            display: inline-block;
-            background: #f7fafc;
-            color: #4a5568;
-            font-size: 1.1em;
-            margin-top: 10px;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            border: 2px solid #e2e8f0;
-            position: relative;
-            z-index: 11;
-        }
-        
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-        }
-        
-        .step {
-            background: white;
-            border-radius: 20px;
-            padding: 35px;
-            border: 2px solid #e2e8f0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .step::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6px;
-            background: linear-gradient(90deg, var(--step-color), var(--step-color-light));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s ease;
-        }
-        
-        .step:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .step:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            border-color: var(--step-color);
-        }
-        
-        .step.prep { --step-color: #3b82f6; --step-color-light: #60a5fa; }
-        .step.payment { --step-color: #10b981; --step-color-light: #34d399; }
-        .step.inscription { --step-color: #f59e0b; --step-color-light: #fbbf24; }
-        .step.second { --step-color: #8b5cf6; --step-color-light: #a78bfa; }
-        .step.final { --step-color: #ef4444; --step-color-light: #f87171; }
-        
-        .step-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5em;
-            margin-bottom: 25px;
-            background: var(--step-color);
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            position: relative;
-        }
-        
-        .step-icon::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: var(--step-color-light);
-            border-radius: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .step:hover .step-icon::after {
-            opacity: 0.3;
-        }
-        
-        .step-title {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 15px;
-            line-height: 1.3;
-        }
-        
-        .step-desc {
-            color: #4a5568;
-            line-height: 1.8;
-            font-size: 1.05em;
-            margin-bottom: 20px;
-            font-weight: 400;
-        }
-        
-        .step-list {
-            list-style: none;
-        }
-        
-        .step-list li {
-            padding: 12px 0;
-            padding-left: 35px;
-            position: relative;
-            color: #2d3748;
-            font-size: 1em;
-            line-height: 1.6;
-            transition: all 0.3s ease;
-        }
-        
-        .step-list li:hover {
-            padding-left: 40px;
-            color: var(--step-color);
-        }
-        
-        .step-list li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            top: 12px;
-            width: 24px;
-            height: 24px;
-            background: var(--step-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.8em;
-        }
-        
-        .flow-arrow {
-            text-align: center;
-            margin: 40px 0;
-            position: relative;
-        }
-        
-        .flow-arrow::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            opacity: 0.1;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0.1;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.3);
-                opacity: 0.05;
-            }
-        }
-        
-        .flow-arrow-icon {
-            font-size: 3em;
-            background: linear-gradient(180deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            position: relative;
-            z-index: 2;
-            display: inline-block;
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(10px); }
-        }
-        
-        .benefits-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 30px;
-            padding: 50px;
-            margin-top: 60px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
-        }
-        
-        .benefits-box::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .benefits-box h2 {
-            font-size: 2.5em;
-            margin-bottom: 30px;
-            font-weight: 800;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 30px;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .benefit-item {
-            background: rgba(255,255,255,0.15);
-            padding: 35px 25px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-        
-        .benefit-item:hover {
-            background: rgba(255,255,255,0.25);
-            transform: translateY(-5px);
-            border-color: rgba(255,255,255,0.4);
-        }
-        
-        .benefit-number {
-            font-size: 3em;
-            font-weight: 800;
-            margin-bottom: 15px;
-            line-height: 1;
-        }
-        
-        .benefit-text {
-            font-size: 1.1em;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-        
-        .tech-section {
-            margin-top: 60px;
-            text-align: center;
-        }
-        
-        .tech-title {
-            font-size: 2.2em;
-            color: #1a202c;
-            font-weight: 800;
-            margin-bottom: 40px;
-        }
-        
-        .tech-stack {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px;
-        }
-        
-        .tech-item {
-            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-            padding: 30px 25px;
-            border-radius: 20px;
-            border: 2px solid #e2e8f0;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .tech-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .tech-item:hover::before {
-            left: 100%;
-        }
-        
-        .tech-item:hover {
-            border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-        }
-        
-        .tech-icon {
-            font-size: 2.5em;
-            margin-bottom: 15px;
-        }
-        
-        .tech-name {
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 8px;
-            font-size: 1.2em;
-        }
-        
-        .tech-purpose {
-            font-size: 0.95em;
-            color: #4a5568;
-            line-height: 1.5;
-        }
-        
-        .final-cta {
-            text-align: center;
-            margin-top: 60px;
-            padding: 50px;
-            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-            border-radius: 30px;
-            border: 3px solid #e2e8f0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .final-cta::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
-        }
-        
-        .final-cta h3 {
-            color: #1a202c;
-            margin-bottom: 20px;
-            font-size: 2em;
-            font-weight: 800;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .final-cta p {
-            color: #2d3748;
-            font-size: 1.2em;
-            line-height: 2;
-            position: relative;
-            z-index: 2;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .final-cta strong {
-            color: #667eea;
-            font-weight: 700;
-        }
+import React from 'react';
+import { BookOpen, CheckCircle, AlertCircle, TrendingUp, DollarSign } from 'lucide-react';
 
-        @media (max-width: 1024px) {
-            .container {
-                padding: 40px;
-            }
-            
-            h1 {
-                font-size: 2.2em;
-            }
-            
-            .phase-title {
-                font-size: 1.7em;
-            }
-            
-            .steps {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                padding: 20px 10px;
-            }
-            
-            .container {
-                padding: 30px 20px;
-                border-radius: 20px;
-            }
-            
-            h1 {
-                font-size: 1.8em;
-            }
-            
-            .subtitle {
-                font-size: 1em;
-            }
-            
-            .phase-title {
-                font-size: 1.4em;
-            }
-            
-            .benefits-box {
-                padding: 30px 20px;
-            }
-            
-            .benefits-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 SISTEMA AUTOMATIZADO DE INSCRIPCIONES</h1>
-            <p class="subtitle">Transformación Digital del Proceso de Inscripción</p>
-            <span class="university-badge">Escuela de Administración y Contaduría • UCV</span>
+const PPEPDFGuide = () => {
+  return (
+    <div className="bg-white min-h-screen p-8 max-w-[210mm] mx-auto" style={{ fontFamily: 'Georgia, serif' }}>
+      {/* Portada */}
+      <div className="text-center mb-12 pb-8 border-b-4 border-blue-600">
+        <div className="flex justify-center mb-6">
+          <BookOpen size={64} className="text-blue-600" />
         </div>
-        
-        <div class="timeline">
-            <!-- FASE 1: PREPARACIÓN -->
-            <div class="phase">
-                <div class="phase-header">
-                    <span class="phase-number">1</span>
-                    <span class="phase-title">FASE PREPARATORIA</span>
-                    <span class="phase-time">📅 2 semanas antes del proceso</span>
-                </div>
-                
-                <div class="steps">
-                    <div class="step prep">
-                        <div class="step-icon">📊</div>
-                        <div class="step-title">Carga de Datos</div>
-                        <div class="step-desc">El personal administrativo proporciona un único archivo Excel:</div>
-                        <ul class="step-list">
-                            <li>Cédula de identidad</li>
-                            <li>Correo electrónico institucional</li>
-                            <li>Promedio académico actualizado</li>
-                            <li>Número de materias cursadas</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step prep">
-                        <div class="step-icon">⚙️</div>
-                        <div class="step-title">Cálculo Automático de Mérito</div>
-                        <div class="step-desc">Sistema procesa y genera el ranking en segundos:</div>
-                        <ul class="step-list">
-                            <li>Aplica fórmula de ponderación transparente</li>
-                            <li>Genera índice académico ponderado</li>
-                            <li>Ordena estudiantes por mérito</li>
-                            <li>Asigna posiciones individuales</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step prep">
-                        <div class="step-icon">📧</div>
-                        <div class="step-title">Notificación Personalizada</div>
-                        <div class="step-desc">Cada estudiante recibe correo detallado con:</div>
-                        <ul class="step-list">
-                            <li>Posición exacta en el ranking</li>
-                            <li>Índice ponderado calculado</li>
-                            <li>Desglose completo del cálculo</li>
-                            <li>Enlace al dashboard de transparencia</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step prep">
-                        <div class="step-icon">📈</div>
-                        <div class="step-title">Dashboard Público</div>
-                        <div class="step-desc">Visualización transparente en tiempo real:</div>
-                        <ul class="step-list">
-                            <li>Rangos de posiciones agregadas</li>
-                            <li>Oferta académica completa</li>
-                            <li>Cupos disponibles por materia</li>
-                            <li>Horarios, secciones y profesores</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flow-arrow">
-                <span class="flow-arrow-icon">⬇️</span>
-            </div>
-            
-            <!-- FASE 2: VERIFICACIÓN DE PAGOS -->
-            <div class="phase">
-                <div class="phase-header">
-                    <span class="phase-number">2</span>
-                    <span class="phase-title">VERIFICACIÓN DE PAGOS</span>
-                    <span class="phase-time">💳 2-3 días antes de inscripciones</span>
-                </div>
-                
-                <div class="steps">
-                    <div class="step payment">
-                        <div class="step-icon">📝</div>
-                        <div class="step-title">Formulario de Pago</div>
-                        <div class="step-desc">Estudiante ingresa datos básicos de forma simple:</div>
-                        <ul class="step-list">
-                            <li>Número de cédula</li>
-                            <li>Correo electrónico</li>
-                            <li>Referencia bancaria del pago</li>
-                            <li>Foto del comprobante (opcional)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step payment">
-                        <div class="step-icon">🔍</div>
-                        <div class="step-title">Verificación Instantánea</div>
-                        <div class="step-desc">Sistema valida automáticamente en tiempo real:</div>
-                        <ul class="step-list">
-                            <li>Consulta API bancaria directamente</li>
-                            <li>Valida monto correcto del pago</li>
-                            <li>Confirma período académico válido</li>
-                            <li>Detecta referencias duplicadas</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step payment">
-                        <div class="step-icon">✅</div>
-                        <div class="step-title">Confirmación Inmediata</div>
-                        <div class="step-desc">Respuesta automática en menos de 5 segundos:</div>
-                        <ul class="step-list">
-                            <li>Confirmación de pago verificado</li>
-                            <li>Correo electrónico de comprobación</li>
-                            <li>Recordatorio de ventana horaria asignada</li>
-                            <li>Estado actualizado: LISTO para inscribir</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flow-arrow">
-                <span class="flow-arrow-icon">⬇️</span>
-            </div>
-            
-            <!-- FASE 3: INSCRIPCIONES PRINCIPAL -->
-            <div class="phase">
-                <div class="phase-header">
-                    <span class="phase-number">3</span>
-                    <span class="phase-title">INSCRIPCIONES PRINCIPAL</span>
-                    <span class="phase-time">🎯 Días 1-2 (turnos organizados)</span>
-                </div>
-                
-                <div class="steps">
-                    <div class="step inscription">
-                        <div class="step-icon">⏰</div>
-                        <div class="step-title">Ventana Horaria Asignada</div>
-                        <div class="step-desc">Grupos de 80-100 estudiantes por turno:</div>
-                        <ul class="step-list">
-                            <li>Asignación por orden de ranking</li>
-                            <li>45 minutos para completar formulario</li>
-                            <li>Dashboard actualizado en vivo</li>
-                            <li>Sin presión por velocidad de conexión</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step inscription">
-                        <div class="step-icon">📋</div>
-                        <div class="step-title">Selección Inteligente</div>
-                        <div class="step-desc">Formulario optimizado para maximizar éxito:</div>
-                        <ul class="step-list">
-                            <li>5 materias prioritarias (preferencia)</li>
-                            <li>5 materias alternativas (respaldo)</li>
-                            <li>Visualización de horarios completos</li>
-                            <li>Cupos disponibles en tiempo real</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step inscription">
-                        <div class="step-icon">🤖</div>
-                        <div class="step-title">Procesamiento Automático</div>
-                        <div class="step-desc">Al cerrar ventana horaria el sistema:</div>
-                        <ul class="step-list">
-                            <li>Ordena solicitudes por mérito académico</li>
-                            <li>Intenta inscribir prioritarias primero</li>
-                            <li>Prueba alternativas si no hay cupo</li>
-                            <li>Maximiza tasa de inscripción exitosa</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step inscription">
-                        <div class="step-icon">📬</div>
-                        <div class="step-title">Resultados Instantáneos</div>
-                        <div class="step-desc">Correo automático con detalles completos:</div>
-                        <ul class="step-list">
-                            <li>Materias inscritas exitosamente</li>
-                            <li>Sección, profesor y horario de cada una</li>
-                            <li>Materias sin cupo disponible</li>
-                            <li>Inclusión automática en 2da oportunidad</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flow-arrow">
-                <span class="flow-arrow-icon">⬇️</span>
-            </div>
-            
-            <!-- FASE 4: SEGUNDA OPORTUNIDAD -->
-            <div class="phase">
-                <div class="phase-header">
-                    <span class="phase-number">4</span>
-                    <span class="phase-title">SEGUNDA OPORTUNIDAD</span>
-                    <span class="phase-time">🔄 Día 3 (proceso automático)</span>
-                </div>
-                
-                <div class="steps">
-                    <div class="step second">
-                        <div class="step-icon">🎯</div>
-                        <div class="step-title">Identificación Automática</div>
-                        <div class="step-desc">Sistema detecta quiénes necesitan 2da ronda:</div>
-                        <ul class="step-list">
-                            <li>Estudiantes con inscripción incompleta</li>
-                            <li>Mantiene orden de ranking original</li>
-                            <li>Reagrupa en nuevas ventanas horarias</li>
-                            <li>Envía notificación automática</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step second">
-                        <div class="step-icon">📝</div>
-                        <div class="step-title">Formulario Simplificado</div>
-                        <div class="step-desc">Enfocado solo en materias faltantes:</div>
-                        <ul class="step-list">
-                            <li>Muestra materias ya inscritas</li>
-                            <li>Dashboard de cupos remanentes</li>
-                            <li>Nueva ventana horaria específica</li>
-                            <li>Mismo criterio justo de priorización</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step second">
-                        <div class="step-icon">✨</div>
-                        <div class="step-title">Resultado Final Optimizado</div>
-                        <div class="step-desc">Estimación basada en datos reales:</div>
-                        <ul class="step-list">
-                            <li>75% completa en fase principal</li>
-                            <li>20% completa en segunda oportunidad</li>
-                            <li>5% requiere atención personalizada</li>
-                            <li>95% de automatización total lograda</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flow-arrow">
-                <span class="flow-arrow-icon">⬇️</span>
-            </div>
-            
-            <!-- FASE 5: CONSOLIDACIÓN -->
-            <div class="phase">
-                <div class="phase-header">
-                    <span class="phase-number">5</span>
-                    <span class="phase-title">CONSOLIDACIÓN FINAL</span>
-                    <span class="phase-time">📦 Día 4 (cierre administrativo)</span>
-                </div>
-                
-                <div class="steps">
-                    <div class="step final">
-                        <div class="step-icon">📥</div>
-                        <div class="step-title">Exportación Unificada</div>
-                        <div class="step-desc">Personal administrativo realiza proceso simple:</div>
-                        <ul class="step-list">
-                            <li>Descarga UN solo archivo consolidado</li>
-                            <li>Formato compatible con sistema UCV</li>
-                            <li>Todas las inscripciones incluidas</li>
-                            <li>Datos validados y verificados</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step final">
-                        <div class="step-icon">⬆️</div>
-                        <div class="step-title">Carga Masiva al Sistema</div>
-                        <div class="step-desc">Importación eficiente al sistema oficial:</div>
-                        <ul class="step-list">
-                            <li>Carga masiva en 2-4 horas</li>
-                            <li>vs. 400 horas del método anterior</li>
-                            <li>Reducción del 95% en tiempo</li>
-                            <li>Eliminación total de errores manuales</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="step final">
-                        <div class="step-icon">📊</div>
-                        <div class="step-title">Reportes Analíticos</div>
-                        <div class="step-desc">Sistema genera análisis automático completo:</div>
-                        <ul class="step-list">
-                            <li>Estadísticas de inscripción por fase</li>
-                            <li>Materias con mayor demanda</li>
-                            <li>Métricas de tiempo de procesamiento</li>
-                            <li>Insights para planificación futura</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+          Propiedad, Planta y Equipo
+        </h1>
+        <h2 className="text-2xl text-blue-600 mb-6">
+          Guía Completa de Estudio
+        </h2>
+        <div className="bg-blue-50 p-4 rounded-lg inline-block">
+          <p className="text-lg text-gray-700">Universidad Central de Venezuela</p>
+          <p className="text-md text-gray-600">Contabilidad IV</p>
+          <p className="text-sm text-gray-500 mt-2">Todos los casos prácticos resueltos</p>
         </div>
+      </div>
+
+      {/* Resumen Visual de Reglas de Oro */}
+      <div className="mb-12 bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg">
+        <h2 className="text-2xl font-bold text-center mb-4">🎯 Reglas de Oro - Memoriza Estas</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">1. Acciones → VJM</p>
+          </div>
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">2. Efectos → VP (sin intereses)</p>
+          </div>
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">3. Facturas → Valor NETO</p>
+          </div>
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">4. Intereses → NO al costo</p>
+          </div>
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">5. Mejora → CAPITALIZA</p>
+          </div>
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">6. Mantenimiento → GASTO</p>
+          </div>
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">7. Desincorpora → SIEMPRE</p>
+          </div>
+          <div className="bg-white bg-opacity-20 p-3 rounded">
+            <p className="font-bold">8. Test 25% → Similar/Diferente</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección 1: Concepto Básico */}
+      <div className="mb-10 page-break">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          1. ¿Qué es Propiedad, Planta y Equipo?
+        </h2>
         
-        <!-- BENEFICIOS -->
-        <div class="benefits-box">
-            <h2>💎 IMPACTO CUANTIFICABLE DEL SISTEMA</h2>
-            <div class="benefits-grid">
-                <div class="benefit-item">
-                    <div class="benefit-number">3 días</div>
-                    <div class="benefit-text">Duración total vs. 14 días actuales</div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-number">15 min</div>
-                    <div class="benefit-text">Tiempo por estudiante vs. 6-9 horas</div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-number">10,000+</div>
-                    <div class="benefit-text">Horas estudiantiles ahorradas/semestre</div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-number">95%</div>
-                    <div class="benefit-text">Reducción en carga administrativa</div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-number">0</div>
-                    <div class="benefit-text">Colas presenciales necesarias</div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-number">100%</div>
-                    <div class="benefit-text">Transparencia y trazabilidad</div>
-                </div>
+        <div className="bg-blue-50 p-4 rounded-lg mb-4">
+          <h3 className="font-bold text-lg mb-2">Definición Simple:</h3>
+          <p className="text-gray-700">
+            Activos <strong>tangibles</strong> (que puedes tocar) que usa la empresa para producir, 
+            vender o administrar, y que duran <strong>MÁS DE 1 AÑO</strong>.
+          </p>
+        </div>
+
+        <div className="bg-green-50 p-4 rounded-lg mb-4">
+          <h3 className="font-bold mb-2">Ejemplos:</h3>
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div>✓ Terrenos</div>
+            <div>✓ Edificios</div>
+            <div>✓ Maquinaria</div>
+            <div>✓ Vehículos</div>
+            <div>✓ Mobiliario</div>
+            <div>✓ Equipos</div>
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 p-4 rounded-lg mb-4">
+          <h3 className="font-bold mb-2">Cuándo NO es PPE:</h3>
+          <ul className="space-y-1 text-sm">
+            <li>✗ Si lo vas a <strong>VENDER</strong> → es inventario</li>
+            <li>✗ Si lo <strong>ALQUILAS</strong> para ganar dinero → propiedad de inversión</li>
+            <li>✗ Si dura <strong>menos de 1 año</strong></li>
+          </ul>
+        </div>
+
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-bold mb-2">2 Condiciones OBLIGATORIAS para reconocer:</h3>
+          <div className="space-y-2">
+            <div className="bg-white p-2 rounded">
+              <p className="font-semibold">1. Probable beneficio económico futuro</p>
             </div>
-        </div>
-        
-        <!-- TECNOLOGÍAS -->
-        <div class="tech-section">
-            <h2 class="tech-title">🔧 TECNOLOGÍAS QUE IMPULSAN EL SISTEMA</h2>
-            <div class="tech-stack">
-                <div class="tech-item">
-                    <div class="tech-icon">⚡</div>
-                    <div class="tech-name">n8n</div>
-                    <div class="tech-purpose">Motor central de automatización de workflows</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-icon">📝</div>
-                    <div class="tech-name">Google Forms</div>
-                    <div class="tech-purpose">Interfaz accesible de captura de datos</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-icon">📊</div>
-                    <div class="tech-name">Google Sheets</div>
-                    <div class="tech-purpose">Base de datos en tiempo real (500 llamadas/min)</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-icon">📈</div>
-                    <div class="tech-name">Looker Studio</div>
-                    <div class="tech-purpose">Dashboards públicos interactivos</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-icon">💳</div>
-                    <div class="tech-name">API Bancaria</div>
-                    <div class="tech-purpose">Verificación automática de pagos</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-icon">📧</div>
-                    <div class="tech-name">SendGrid/Mailgun</div>
-                    <div class="tech-purpose">Sistema profesional de notificaciones</div>
-                </div>
+            <div className="bg-white p-2 rounded">
+              <p className="font-semibold">2. Costo medible con fiabilidad</p>
             </div>
+          </div>
         </div>
-        
-        <div class="final-cta">
-            <h3>🎯 DE 14 DÍAS CAÓTICOS A 3 DÍAS ORGANIZADOS</h3>
-            <p>
-                Este no es solo un sistema tecnológico. <strong>Es una transformación completa de la experiencia de inscripción.</strong><br><br>
-                Transparente en cada paso. Justo en cada decisión. Eficiente en cada proceso. Automático de principio a fin.<br><br>
-                <strong>Bienvenidos al futuro de las inscripciones en la Escuela de Administración y Contaduría de la UCV.</strong><br>
-                <em>Donde la tecnología sirve a la academia, y el mérito académico es recompensado con total transparencia.</em>
-            </p>
+      </div>
+
+      {/* Sección 2: Costo Inicial */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          2. Costo Inicial: Qué Incluir
+        </h2>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-green-50 border-2 border-green-500 p-3 rounded">
+            <h3 className="font-bold text-green-700 mb-2">SÍ SE INCLUYE:</h3>
+            <ul className="space-y-1 text-sm">
+              <li>✓ Precio de compra</li>
+              <li>✓ Transporte</li>
+              <li>✓ Instalación</li>
+              <li>✓ Pruebas iniciales</li>
+              <li>✓ Honorarios legales</li>
+              <li>✓ Aranceles</li>
+            </ul>
+          </div>
+
+          <div className="bg-red-50 border-2 border-red-500 p-3 rounded">
+            <h3 className="font-bold text-red-700 mb-2">NO SE INCLUYE:</h3>
+            <ul className="space-y-1 text-sm">
+              <li>✗ Mantenimiento diario</li>
+              <li>✗ Reparaciones ordinarias</li>
+              <li>✗ Costos de apertura</li>
+              <li>✗ Publicidad</li>
+              <li>✗ Capacitación personal</li>
+              <li>✗ Pérdidas iniciales</li>
+            </ul>
+          </div>
         </div>
+
+        <div className="bg-blue-100 p-3 rounded mt-4 text-center">
+          <p className="font-bold">Regla: TODO lo necesario para que FUNCIONE</p>
+        </div>
+      </div>
+
+      {/* Sección 3: Pagos Combinados */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          3. Pagos Combinados Múltiples
+        </h2>
+
+        <div className="bg-blue-50 p-4 rounded mb-4">
+          <p className="font-bold text-lg">Cada forma de pago se registra POR SEPARADO en el HABER</p>
+        </div>
+
+        <div className="bg-white border p-3 rounded">
+          <p className="font-semibold mb-2">Ejemplo: Compra por Bs. 10.000.000</p>
+          <table className="w-full text-sm">
+            <tbody>
+              <tr><td>Maquinaria</td><td className="text-right">10.000.000</td><td></td></tr>
+              <tr><td className="pl-4">Banco</td><td></td><td className="text-right">2.000.000</td></tr>
+              <tr><td className="pl-4">Acciones (VJM)</td><td></td><td className="text-right">3.000.000</td></tr>
+              <tr><td className="pl-4">CxP</td><td></td><td className="text-right">3.000.000</td></tr>
+              <tr><td className="pl-4">Efectos x Pagar (VP)</td><td></td><td className="text-right">2.000.000</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Sección 4: Desincorporación */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          4. Desincorporación de Activos
+        </h2>
+
+        <div className="bg-red-50 border-2 border-red-500 p-4 rounded mb-4">
+          <p className="font-bold text-lg text-red-700">SÍ, SIEMPRE debes desincorporar el activo que entregas</p>
+        </div>
+
+        <div className="bg-white border p-3 rounded">
+          <p className="font-semibold mb-2">Procedimiento:</p>
+          <ol className="text-sm space-y-1">
+            <li>1. DA acumulada → DEBE</li>
+            <li>2. Activo Nuevo (VJM) → DEBE</li>
+            <li>3. Activo Viejo (costo) → HABER</li>
+            <li>4. Ganancia/Pérdida → según corresponda</li>
+          </ol>
+        </div>
+
+        <div className="bg-yellow-50 p-3 rounded mt-3">
+          <p className="text-sm">Ganancia/Pérdida = VJM - VSL</p>
+        </div>
+      </div>
+
+      {/* Sección 5: VSL vs VJM */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          5. Valor en Libros vs Valor de Mercado
+        </h2>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-green-50 border-2 border-green-500 p-3 rounded">
+            <h3 className="font-bold mb-2">USA VJM cuando:</h3>
+            <ul className="text-sm space-y-1">
+              <li>✓ Activos DIFERENTES</li>
+              <li>✓ Pagas con acciones</li>
+              <li>✓ Donación</li>
+              <li>✓ Compra en lote</li>
+            </ul>
+          </div>
+
+          <div className="bg-blue-50 border-2 border-blue-500 p-3 rounded">
+            <h3 className="font-bold mb-2">USA VSL cuando:</h3>
+            <ul className="text-sm space-y-1">
+              <li>✓ Activos SIMILARES</li>
+              <li>✓ Efectivo menor 25%</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección 6: Condiciones Facturas */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          6. Condiciones de Pago en Facturas
+        </h2>
+
+        <div className="bg-white border p-4 rounded mb-3">
+          <p className="text-center font-mono text-xl mb-2">10/30, 5/60, N/90</p>
+          <div className="text-sm space-y-1">
+            <p>10/30 = 10% descuento si pagas en 30 días</p>
+            <p>5/60 = 5% descuento si pagas en 60 días</p>
+            <p>N/90 = Neto (sin descuento) en 90 días</p>
+          </div>
+        </div>
+
+        <div className="bg-green-50 p-3 rounded">
+          <p className="font-bold">REGLA: Registra al valor NETO (con descuento máximo)</p>
+          <p className="text-sm mt-1">Si no aprovechas = Gasto Financiero</p>
+        </div>
+      </div>
+
+      {/* Sección 7: Regla 25% */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          7. Regla del 25%
+        </h2>
+
+        <div className="bg-red-50 border-2 border-red-500 p-4 rounded mb-3">
+          <p className="font-bold text-lg">Si efectivo es mayor o igual al 25% del VJM → DIFERENTES</p>
+          <p className="font-bold text-lg">Si efectivo es menor al 25% del VJM → SIMILARES</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-green-50 p-3 rounded">
+            <h3 className="font-bold mb-1">DIFERENTES:</h3>
+            <ul className="text-sm">
+              <li>✓ Usa VJM</li>
+              <li>✓ Reconoce toda ganancia</li>
+            </ul>
+          </div>
+
+          <div className="bg-yellow-50 p-3 rounded">
+            <h3 className="font-bold mb-1">SIMILARES:</h3>
+            <ul className="text-sm">
+              <li>✓ Usa VSL</li>
+              <li>✓ NO reconoce ganancia</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección 8: Productos en Prueba */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          8. Venta de Productos en Pruebas
+        </h2>
+
+        <div className="bg-green-50 border-2 border-green-500 p-4 rounded mb-3">
+          <p className="font-bold text-lg">RESTA del costo del activo</p>
+        </div>
+
+        <div className="bg-white border p-3 rounded">
+          <p className="font-semibold mb-2">Asiento:</p>
+          <table className="w-full text-sm">
+            <tbody>
+              <tr><td>Banco</td><td className="text-right">XXX</td><td></td></tr>
+              <tr><td className="pl-4">Maquinaria</td><td></td><td className="text-right">XXX</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Sección 9: Efectos e Intereses */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          9. Efectos por Pagar e Intereses
+        </h2>
+
+        <div className="bg-red-50 p-4 rounded mb-3">
+          <p className="font-bold">Registra SOLO el Valor Presente (sin intereses)</p>
+        </div>
+
+        <div className="bg-white border p-3 rounded">
+          <p className="font-semibold mb-2">Registro Inicial:</p>
+          <table className="w-full text-sm">
+            <tbody>
+              <tr><td>Activo</td><td className="text-right">VP</td><td></td></tr>
+              <tr><td>Intereses No Devengados</td><td className="text-right">Intereses</td><td></td></tr>
+              <tr><td className="pl-4">Efectos x Pagar</td><td></td><td className="text-right">Total</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Sección 10: Sustitución Piezas */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          10. Sustitución de Piezas
+        </h2>
+
+        <div className="bg-purple-50 p-4 rounded mb-3">
+          <p className="font-bold text-lg">Solo desincorporas la PIEZA, NO todo el activo</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-green-50 p-3 rounded">
+            <h3 className="font-bold mb-1">Si conoces costo:</h3>
+            <p className="text-sm">Da de baja solo esa pieza</p>
+          </div>
+
+          <div className="bg-yellow-50 p-3 rounded">
+            <h3 className="font-bold mb-1">Si NO conoces:</h3>
+            <p className="text-sm">Ajusta DA con costo nuevo</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección 11: Gasto vs Capitalización */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          11. Reparaciones: Gasto vs Capitalización
+        </h2>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-red-50 border-2 border-red-500 p-3 rounded">
+            <h3 className="font-bold text-red-700 mb-2">ES GASTO:</h3>
+            <ul className="text-sm space-y-1">
+              <li>✗ Solo mantiene</li>
+              <li>✗ NO aumenta vida</li>
+              <li>✗ Reparación rutinaria</li>
+            </ul>
+          </div>
+
+          <div className="bg-green-50 border-2 border-green-500 p-3 rounded">
+            <h3 className="font-bold text-green-700 mb-2">CAPITALIZA:</h3>
+            <ul className="text-sm space-y-1">
+              <li>✓ Aumenta vida útil</li>
+              <li>✓ Mejora capacidad</li>
+              <li>✓ Sustituye componente</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección 12: Daños y Seguros */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          12. Daños y Seguros
+        </h2>
+
+        <div className="bg-blue-50 p-4 rounded mb-3">
+          <p className="font-bold">Son 2 transacciones SEPARADAS:</p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="bg-white border p-2 rounded">
+            <p className="font-semibold text-sm">1. Reparación = GASTO</p>
+          </div>
+          <div className="bg-white border p-2 rounded">
+            <p className="font-semibold text-sm">2. Seguro = INGRESO</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Trampas Comunes */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          13. Trampas Comunes
+        </h2>
+
+        <div className="space-y-2">
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-2">
+            <p className="font-bold text-sm">Seguros anticipados → Gasto Pagado Anticipado</p>
+          </div>
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-2">
+            <p className="font-bold text-sm">Impuestos vencidos terreno → Costo del terreno</p>
+          </div>
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-2">
+            <p className="font-bold text-sm">Demolición → SUMA al costo del terreno</p>
+          </div>
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-2">
+            <p className="font-bold text-sm">Capacitación → SIEMPRE gasto</p>
+          </div>
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-2">
+            <p className="font-bold text-sm">Pérdidas iniciales → GASTO</p>
+          </div>
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-2">
+            <p className="font-bold text-sm">Publicidad → GASTO</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tips Finales */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+          14. Tips Finales para el Examen
+        </h2>
+
+        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded">
+          <ol className="space-y-2 text-sm">
+            <li>1. Lee TODO antes de empezar</li>
+            <li>2. Identifica tipo de transacción</li>
+            <li>3. Calcula valores primero</li>
+            <li>4. Verifica DEBE = HABER</li>
+            <li>5. No olvides desincorporar</li>
+            <li>6. VP para efectos, VJM para acciones</li>
+            <li>7. Aplica test del 25%</li>
+            <li>8. Separa intereses</li>
+            <li>9. Pregúntate: ¿aumenta, mantiene o corrige?</li>
+            <li>10. Muestra tus cálculos</li>
+          </ol>
+        </div>
+      </div>
+
+      {/* Cierre */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-lg text-center">
+        <CheckCircle size={48} className="mx-auto mb-4" />
+        <h2 className="text-3xl font-bold mb-3">¡Éxito en tu Examen!</h2>
+        <p className="text-xl mb-2">Universidad Central de Venezuela</p>
+        <p className="text-lg">Contabilidad IV - PPE</p>
+      </div>
+
+      <div className="text-center text-sm text-gray-500 mt-8">
+        <p>Guía Completa de Estudio - 2024</p>
+      </div>
     </div>
-</body>
-</html>
+  );
+};
+
+export default PPEPDFGuide;
